@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="utf-8" />
+<title>A Simple PhoneGap Application</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="css/jquery.mobile.min.css">
+
+<script src="cordova.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/jquery.mobile.min.js"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+  $("button.b1").click(function(){
+     $(this).html("I know ...");
+  });
+});
+
+function addListener() { 
+	document.addEventListener("deviceready", onDeviceReady, false);
+	function onDeviceReady() {
+    console.log("navigator.geolocation works well");
+	}
+}
+
+// onSuccess Callback
+// This method accepts a Position object, which contains the
+// current GPS coordinates
+//
+var onSuccess = function(position) {
+    alert('Latitude: '          + position.coords.latitude          + '\n' +
+          'Longitude: '         + position.coords.longitude         + '\n' +
+          'Altitude: '          + position.coords.altitude          + '\n' +
+          'Accuracy: '          + position.coords.accuracy          + '\n' +
+          'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
+          'Heading: '           + position.coords.heading           + '\n' +
+          'Speed: '             + position.coords.speed             + '\n' +
+          'Timestamp: '         + position.timestamp                + '\n');
+};
+
+// onError Callback receives a PositionError object
+//
+function onError(error) {
+    alert('code: '    + error.code    + '\n' +
+          'message: ' + error.message + '\n');
+}
+
+function checkLocale() (
+	navigator.geolocation.getCurrentPosition(onSuccess, onError);
+}
+
+</script>
+
+<style type="text/css">
+<!--
+img.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+button {
+	padding-top: 50px;
+	margin: 50px;
+}
+
+
+-->
+</style>
+
+</head>
+
+<body onLoad="addListener();">
+
+<div data-role="page" data-theme="a">
+
+  <div data-role="header" data-fullscreen="true">
+    <h1>Sample PhoneGap Geolocation</h1>
+  </div>
+
+  <div data-role=content>
+  
+    
+    	
+    <div align="center">
+    	<img src="images/map.png" alt="map" width="250" height="250" class="center">
+    </div>
+
+	<div>
+		<button class="b1" onClick="checkLocale();">click to see what I know about this geolocale</button>
+    </div>
+            
+  </div>
+
+  <div data-role="footer" data-position="fixed" data-fullscreen="true">
+    <h4>Rick Mitchell</h4>
+  </div>
+
+</div>
+
+</body>
+</html>
