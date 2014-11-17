@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+
+<html> 
 <head>
 
 <meta charset="utf-8" />
-<title>A Simple PhoneGap Application</title>
+<title>Sample Geolocation PhoneGap App</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -12,95 +13,127 @@
 <script src="cordova.js"></script>
 <script src="js/jquery.min.js"></script>
 <script src="js/jquery.mobile.min.js"></script>
-
+     
 <script type="text/javascript">
-
+ 
+var map;
+var marker;
+var infowindow;
+var watchID;
+ 
 $(document).ready(function(){
-  $("button.b1").click(function(){
-     $(this).html("I know ...");
-  });
+    document.addEventListener("deviceready", onDeviceReady, false);
+    //for testing in Chrome browser uncomment
+    //onDeviceReady();
 });
-
-function addListener() { 
-	document.addEventListener("deviceready", onDeviceReady, false);
-	function onDeviceReady() {
-    console.log("navigator.geolocation works well");
-	}
+ 
+//PhoneGap is ready function
+function onDeviceReady() {
+    $(window).unbind();
+    $(window).bind('pageshow resize orientationchange', function(e){
+        max_height();
+    });
+    max_height();
+    google.load("maps", "3.8", {"callback": map, other_params: "sensor=true&language=en"});
 }
-
-// onSuccess Callback
-// This method accepts a Position object, which contains the
-// current GPS coordinates
-//
-var onSuccess = function(position) {
-    alert('Latitude: '          + position.coords.latitude          + '\n' +
-          'Longitude: '         + position.coords.longitude         + '\n' +
-          'Altitude: '          + position.coords.altitude          + '\n' +
-          'Accuracy: '          + position.coords.accuracy          + '\n' +
-          'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '\n' +
-          'Heading: '           + position.coords.heading           + '\n' +
-          'Speed: '             + position.coords.speed             + '\n' +
-          'Timestamp: '         + position.timestamp                + '\n');
-};
-
-// onError Callback receives a PositionError object
-//
-function onError(error) {
-    alert('code: '    + error.code    + '\n' +
-          'message: ' + error.message + '\n');
+ 
+function max_height(){
+    var h = $('div[data-role="header"]').outerHeight(true);
+    var f = $('div[data-role="footer"]').outerHeight(true);
+    var w = $(window).height();
+    var c = $('div[data-role="content"]');
+    var c_h = c.height();
+    var c_oh = c.outerHeight(true);
+    var c_new = w - h - f - c_oh + c_h;
+    var total = h + f + c_oh;
+    if(c_h<c.get(0).scrollHeight){
+        c.height(c.get(0).scrollHeight);
+    }else{
+        c.height(c_new);
+    }
 }
-
-function checkLocale() (
-	navigator.geolocation.getCurrentPosition(onSuccess, onError);
+         
+function map(){
+    var latlng = new google.maps.LatLng(55.17, 23.76);
+    var myOptions = {
+      zoom: 6,
+      center: latlng,
+      streetViewControl: true,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      zoomControl: true
+    };
+    map = new google.maps.Map(document.getElementById("map"), myOptions);
+     
+    google.maps.event.addListenerOnce(map, 'tilesloaded', function(){
+        //get geoposition once
+        //navigator.geolocation.getCurrentPosition(geo_success, geo_error, { maximumAge: 5000, timeout: 5000, enableHighAccuracy: true });
+        //watch for geoposition change
+        watchID = navigator.geolocation.watchPosition(geo_success, geo_error, { maximumAge: 5000, timeout: 5000, enableHighAccuracy: true });   
+    }); 
 }
-
+ 
+function geo_error(error){
+    //comment
+    alert('code: ' + error.code + '\n' + 'message: ' + error.message + '\n');
+}
+ 
+function geo_success(position) {
+     
+    map.setCenter(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    map.setZoom(15);
+ 
+    var info = 
+    ('Latitude: '         + position.coords.latitude          + '<br>' +
+    'Longitude: '         + position.coords.longitude         + '<br>' +
+    'Altitude: '          + position.coords.altitude          + '<br>' +
+    'Accuracy: '          + position.coords.accuracy          + '<br>' +
+    'Altitude Accuracy: ' + position.coords.altitudeAccuracy  + '<br>' +
+    'Heading: '           + position.coords.heading           + '<br>' +
+    'Speed: '             + position.coords.speed             + '<br>' +
+    'Timestamp: '         + new Date(position.timestamp));
+ 
+    var point = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+    if(!marker){
+        //create marker
+        marker = new google.maps.Marker({
+            position: point,
+            map: map
+        });
+    }else{
+        //move marker to new position
+        marker.setPosition(point);
+    }
+    if(!infowindow){
+        infowindow = new google.maps.InfoWindow({
+            content: info
+        });
+    }else{
+        infowindow.setContent(info);
+    }
+    google.maps.event.addListener(marker, 'click', function() {
+      infowindow.open(map,marker);
+    }); 
+}
 </script>
+ 
+</head> 
 
-<style type="text/css">
-<!--
-img.center {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-button {
-	padding-top: 50px;
-	margin: 50px;
-}
-
-
--->
-</style>
-
-</head>
-
-<body onLoad="addListener();">
-
-<div data-role="page" data-theme="a">
+<body> 
+ 
+<div data-role="page" id="index">
 
   <div data-role="header" data-fullscreen="true">
-    <h1>Sample PhoneGap Geolocation</h1>
+  	<h1>Sample PhoneGap Geolocation</h1>
   </div>
 
-  <div data-role=content>
-  
+    <div data-role="content" style="padding:0;">
+        <div id="map" style="width:100%;height:100%;"></div>
+    </div>
     
-    	
-    <div align="center">
-    	<img src="images/map.png" alt="map" width="250" height="250" class="center">
-    </div>
-
-	<div>
-		<button class="b1" onClick="checkLocale();">click to see what I know about this geolocale</button>
-    </div>
-            
-  </div>
-
   <div data-role="footer" data-position="fixed" data-fullscreen="true">
     <h4>Rick Mitchell</h4>
   </div>
-
+  
 </div>
-
-</body>
+ 
 </html>
